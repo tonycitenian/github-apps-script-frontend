@@ -1,24 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GitHub Pages → Apps Script API Test</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px;
+      border: none;
+      background: black;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 15px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<h2>GitHub Pages → Google Apps Script API</h2>
+
+<button onclick="testGet()">Test GET</button>
+<button onclick="testPost()">Test POST</button>
+
+<h3>Response:</h3>
+<pre id="output">Waiting…</pre>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxidJ9lEVzLKQ3QB-zmsnhJgOB5PXDgVuYQC8biBizHkErDCc_PyrdINLCCiaovoUuKsg/exec"; 
+// Replace with your own URL if needed
+
+function show(data) {
+  document.getElementById("output").textContent =
+    typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+/**
+ * JSONP Wrapper
+ */
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "cb_" + Math.random().toString(36).substring(2);
+
+    window[callbackName] = (data) => {
+      delete window[callbackName];
+      resolve(data);
+    };
+
+    const script = document.createElement("script");
+    script.src = url.replace("callback=cb", "callback=" + callbackName);
+    script.onerror = reject;
+
+    document.body.appendChild(script);
+  });
+}
+
+/**
+ * Test GET
+ */
 async function testGet() {
-  try {
-    const res = await fetch(API_URL);
-    const text = await res.text();  // Apps Script returns HTML, not pure JSON
-    show(text);
-  } catch (e) {
-    show({ error: e.toString() });
-  }
+  const url = API_URL + "?callback=cb&source=github";
+  const data = await jsonp(url);
+  show(data);
 }
 
+/**
+ * Test POST
+ */
 async function testPost() {
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "Hello!", time: Date.now() })
-    });
+  const payload = {
+    message: "Hello from GitHub Pages!",
+    time: new Date().toISOString()
+  };
 
-    const text = await res.text();
-    show(text);
-  } catch (e) {
-    show({ error: e.toString() });
-  }
+  const url = API_URL + "?callback=cb";
+
+  const data = await jsonp(url + "&data=" + encodeURIComponent(JSON.stringify(payload)));
+  show(data);
 }
+
+</script>
+
+</body>
+</html>
