@@ -1,53 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>GitHub + Apps Script API</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background: #f6f6f6;
-    }
-    
-    button {
-      padding: 10px 18px;
-      margin: 10px 0;
-      border: none;
-      background: #333;
-      color: white;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    pre {
-      background: #222;
-      color: #0f0;
-      padding: 15px;
-      white-space: pre-wrap;
-      max-width: 700px;
-    }
-  </style>
-</head>
-<body>
-
-<h2>GitHub Pages → Google Apps Script API</h2>
-
-<button onclick="testGet()">Test GET Request</button>
-<button onclick="testPost()">Test POST Request</button>
-
-<h3>Response:</h3>
-<pre id="output">Waiting...</pre>
-
-<script>
-const API_URL = "https://supreme-computing-machine-74665q4xrjwfxqrw.github.dev/";
-if (API_URL.includes("XXXXXXX")) {
-  alert("⚠️ Replace XXXXXXX with your Apps Script URL!");
-}
-
 async function testGet() {
   try {
     const res = await fetch(API_URL);
-    const data = await res.json();
-    show(data);
+    const text = await res.text();  // Apps Script returns HTML, not pure JSON
+    show(text);
   } catch (e) {
     show({ error: e.toString() });
   }
@@ -58,23 +13,12 @@ async function testPost() {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: "Hello from GitHub!",
-        time: new Date().toISOString()
-      })
+      body: JSON.stringify({ message: "Hello!", time: Date.now() })
     });
 
-    const data = await res.json();
-    show(data);
+    const text = await res.text();
+    show(text);
   } catch (e) {
     show({ error: e.toString() });
   }
 }
-
-function show(msg) {
-  document.getElementById("output").textContent = JSON.stringify(msg, null, 2);
-}
-</script>
-
-</body>
-</html>
